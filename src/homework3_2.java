@@ -26,8 +26,8 @@ public class homework3_2 {
         } else {
             fSet = c;
         }
-        System.out.println("Вася - " +i+ "" + iSet);
-        System.out.println("Петя - " +f+ "" + fSet);
+        System.out.println("Вася - " +iSet+ "");
+        System.out.println("Петя - " +fSet+ "");
         // результат игры}
         if (i == f) {
             System.out.println("Ничья з:");
