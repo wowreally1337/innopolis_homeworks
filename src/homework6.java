@@ -96,7 +96,7 @@ public class homework6 {
         @Override
         public String toString() {
             String discountInfo = isDiscountValid() ?
-                    " (скидка: " + discount + " руб., действует до: " + discountEndDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) + ")" + : "(скидка недействительна).";
+                    " (скидка: " + discount + " руб., действует до: " + discountEndDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) + ")"  : "(скидка недействительна).";
             return super.getName() + discountInfo;
         }
     }
@@ -149,7 +149,7 @@ public class homework6 {
                             .append(dp.isDiscountValid() ? "со скидкой" : "без скидки.")
                             .append(") .");
                 } else {
-                    sb.append(bag.get(i).getName());
+                    sb.append(product.getName());
                 }
                 if (i < bag.size() - 1) sb.append(", ");
             }
@@ -204,7 +204,7 @@ public class homework6 {
         // Ввод продуктов
         List<Product> products = new ArrayList<>();
         System.out.println("Введите продукты в формате: Название = Цена");
-
+        System.out.println("Введите продукты со скидкой в формате: Название = Цена = Скидка = Дата окончания скидки");
 
         while (true) {
             System.out.print("> ");
@@ -213,27 +213,79 @@ public class homework6 {
 
             try {
                 String[] parts = input.split("=");
-                if (parts.length != 2) {
-                    System.out.println("Ошибка формата! Используйте: Название = Цена");
+
+                if (parts.length == 2) {
+                    String name = parts[0].trim();
+                    String priceStr = parts[1].trim();
+                    // Валидация названия
+                    if (name.isEmpty()) {
+                        System.out.println("Название продукта не может быть пустым");
+                        continue;
+                    }
+                    if (name.length() < 3) {
+                        System.out.println("Название продукта не может быть меньше 3 символов.");
+                        continue;
+                    }
+                    if (name.matches("\\d+")) {
+                        System.out.println("Название продукта не может содержать только цифры.");
+                        continue;
+                    }
+                    int price = Integer.parseInt(priceStr);
+                    if (price <= 0) {
+                        System.out.println("Стоимость продукта должна быть больше 0.");
+                        continue;
+                    }
+                    products.add(new Product(name, price));
+                }  else if (parts.length == 4) {
+                    String name = parts[0].trim();
+                    String priceStr = parts[1].trim();
+                    String discountStr = parts[2].trim();
+                    String endDate = parts[3].trim();
+                    //Валидация названия со скидкой
+                    if (name.isEmpty()) {
+                        System.out.println("Название продукта не может быть пустым");
+                        continue;
+                    }
+                    if (name.length() < 3) {
+                        System.out.println("Название продукта не может быть меньше 3 символов.");
+                        continue;
+                    }
+                    if (name.matches("\\d+")) {
+                        System.out.println("Название продукта не может содержать только цифры.");
+                        continue;
+                    }
+
+                    int price = Integer.parseInt(priceStr);
+                    if (price <= 0) {
+                        System.out.println("Стоимость продукта должна быть больше 0.");
+                        continue;
+                    }
+                    int discount = Integer.parseInt(discountStr);
+                    if (discount <= 0) {
+                        System.out.println("Скидка должна быть положительным числом");
+                        continue;
+                    }
+                    if (discount >= price) {
+                        System.out.println("Скидка не может быть больше/равна цене продукта.");
+                        continue;
+                    }
+                    try {
+                        LocalDate discountDate = LocalDate.parse(endDate, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                        if (discountDate.isBefore(LocalDate.now())) {
+                            System.out.println("Дата окончания скидки не может быть в прошлом.");
+                            continue;
+                        }
+                    } catch (DateTimeParseException e) {
+                        System.out.println("Неверный формат даты. Используйте формат день.месяц.год.");
+                        continue;
+                    }
+                    products.add(new DiscountProduct(name, price, discount, endDate));
+                } else {
+                    System.out.println("Ошибка формата ввода. Используйте формат: ");
+                    System.out.println("Название = цена (продукты без скидки).");
+                    System.out.println("Название = цена = скидка = дата (продукты со скидкой).");
                     continue;
                 }
-
-                String name = parts[0].trim();
-                String priceStr = parts[1].trim();
-
-                // Валидация названия
-                if (name.isEmpty()) {
-                    System.out.println("Название продукта не может быть пустым");
-                    continue;
-                }
-
-                int price = Integer.parseInt(priceStr);
-                if (price < 0) {
-                    System.out.println("Стоимость продукта не может быть отрицательной");
-                    continue;
-                }
-
-                products.add(new Product(name, price));
             } catch (NumberFormatException e) {
                 System.out.println("Ошибка! Цена должна быть числом");
             }
@@ -296,5 +348,30 @@ public class homework6 {
         for (Person person : people) {
             System.out.println(person);
         }
+        scanner.close();
     }
 }
+//Тестовые данные
+//Павел Андреевич = 10000;
+// Анна Петровна = 2000;
+// Борис = 10.
+
+//Хлеб = 40; Молоко = 60; Торт = 1000;
+//Кофе растворимый = 879; Масло = 150
+
+//Павел Андреевич - Хлеб
+//Павел Андреевич - Масло
+//Анна Петровна - Кофе растворимый
+//Анна Петровна - Молоко
+//Анна Петровна - Молоко
+//Анна Петровна - Молоко
+//Анна Петровна - Торт
+//Борис - Торт
+//Павел Андреевич - Торт
+
+//Женя = 0
+//Мороженое = 200
+//Женя - Мороженое
+
+//Света = -3
+//Фа = 100
